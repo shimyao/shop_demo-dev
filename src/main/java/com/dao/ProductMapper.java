@@ -45,7 +45,7 @@ public interface ProductMapper {
      *
      * @mbg.generated
      */
-    int updateByPrimaryKey(Product record);
+    int updateByPrimaryKey(Product product);
 
     //后台--更新商品状态
     int updateProductKeySelective(Product product);
@@ -57,5 +57,8 @@ public interface ProductMapper {
     //前台--搜索商品
     List<Product> searchProduct(@Param("integerSet") Set<Integer> integerSet,
                                 @Param("keyword") String keyword);
+
+    //按照商品id查询商品库存
+    Integer findStockByProductId(Integer productId);
 
 }

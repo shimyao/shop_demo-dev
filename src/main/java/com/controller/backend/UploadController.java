@@ -18,7 +18,7 @@ public class UploadController {
 
     @RequestMapping(value = "/upload",method =RequestMethod.GET)
     public String upload(){
-        return "upload";//逻辑试图  springmvc 加载文件 前缀+逻辑视图+后缀
+        return "upload";//逻辑视图  springmvc 加载文件 前缀+逻辑视图+后缀
     }
 
     @RequestMapping(value = "/upload",method = RequestMethod.POST)

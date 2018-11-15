@@ -219,5 +219,18 @@ class UserServiceImpl implements IUserService {
         return userInfoMapper.selectByPrimaryKey(userId);
     }
 
+    @Override
+    public int updateTokenByUserId(Integer userId, String token) {
+        return userInfoMapper.updateTokenByUserId(userId,token);
+    }
+
+    @Override
+    public UserInfo findUserInfoByToken(String token) {
+        if (token==null||token.equals("")){
+            return null;
+        }
+        return userInfoMapper.findUserInfoByToken(token);
+    }
+
 
 }

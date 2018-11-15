@@ -11,7 +11,9 @@
        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
     <!-- 开启注解 -->
-    <context:component-scan base-package="com.controller" />
+    <context:component-scan base-package="com.controller" >
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
 
     <!--配置控制器可以返回json格式的数据-->
     <mvc:annotation-driven>
@@ -41,5 +43,27 @@
             <value>5242880</value>
         </property>
     </bean>
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/manage/**"/>
+            <mvc:exclude-mapping path="/manage/user/login/{username}/{password}"/>
+            <bean class="com.controller.common.interceptor.AuthorityInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+<!--
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/user/*"/>
+            <mvc:exclude-mapping path="/user/register.do"/>
+            <mvc:exclude-mapping path="/user/forget_get_question/username/{username}"/>
+            <mvc:exclude-mapping path="/user/forget_check_answer/{username}/{question}/{answer}"/>
+            <mvc:exclude-mapping path="/user/forget_reset_password/{username}/{passwordNew}/{forgetToken}"/>
+            <mvc:exclude-mapping path="/user/check_valid/{type}/{str}"/>
+            <bean class="com.controller.common.interceptor.AuthorityInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+-->
 
 </beans>

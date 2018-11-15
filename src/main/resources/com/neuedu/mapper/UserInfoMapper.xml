@@ -128,4 +128,13 @@
     where username=#{username} and question=#{question} and answer=#{answer}
   </select>
 
+  <update id="updateTokenByUserId" parameterType="map" >
+    update user set token=#{token} where id=#{userId}
+  </update>
+<select id="findUserInfoByToken" parameterType="String" resultType="com.pojo.UserInfo">
+    select id, username, password, email, phone, question, answer, role, create_time,
+    update_time
+    from user where token=#{token}
+</select>
+
 </mapper>

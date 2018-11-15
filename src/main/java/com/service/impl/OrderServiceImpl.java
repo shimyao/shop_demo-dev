@@ -45,8 +45,10 @@ import com.vo.ShippingVO;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,6 +72,7 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     PayInfoMapper payInfoMapper;
 
+    @Transactional
     @Override
     public ServerResponse createOrder(Integer userId,Integer shippingId) {
         //1.参数非空校验
@@ -97,6 +100,9 @@ public class OrderServiceImpl implements IOrderService {
         }
         orderTotalPrice= getOrderPrice(orderItemList);
         Order order= createOrder(userId,shippingId,orderTotalPrice);
+
+        //int a=3/0;   //调试事务
+
         if (order==null){
             return ServerResponse.serverResponseByError("订单创建失败");
         }
@@ -271,7 +277,7 @@ public class OrderServiceImpl implements IOrderService {
          }
          orderVO.setOrderNo(order.getOrderNo());
          orderVO.setCreateTime(DateUtils.dataToStr(order.getCreateTime()));
-         orderVO.setSendTime(DateUtils.dataToStr(order.getSendTime()));
+         //orderVO.setSendTime(DateUtils.dataToStr(order.getSendTime()));
         return orderVO;
     }
 
@@ -492,6 +498,38 @@ public class OrderServiceImpl implements IOrderService {
         }
 
         return ServerResponse.serverResponseBySuccess(false);
+    }
+
+    @Transactional
+    @Override
+    public void closeOrder(String time) {
+        //1.查询订单创建时间 <time 的 未付款的订单
+        List<Order> orderList= orderMapper.findOrderByCreateTime(Const.OrderStatusEnum.ORDER_UN_PAY.getCode(),time);
+        if (orderList!=null&&orderList.size()>0){
+            for (Order order:orderList){
+                List<OrderItem> orderItemList=orderItemMapper.findOrderItemsByOrderNo(order.getOrderNo());
+                if (orderItemList!=null&&orderItemList.size()>0){
+                    for (OrderItem orderItem:orderItemList){
+                       Integer stock= productMapper.findStockByProductId(orderItem.getProductId());
+                       if (stock==null){
+                           continue;
+                       }
+                       //更新商品库存
+                        stock=stock+orderItem.getQuantity();
+                        Product product=new Product();
+                        product.setId(orderItem.getProductId());
+                        product.setStock(stock);
+
+                        productMapper.updateProductKeySelective(product);
+                    }
+                }
+                //关闭订单
+                order.setStatus(Const.OrderStatusEnum.ORDER_CANCELED.getCode());
+                order.setCloseTime(new Date());
+                orderMapper.updateByPrimaryKey(order);
+            }
+        }
+
     }
 
     ///////////////////////////////////支付相关//////////////////////////////////////
@@ -859,7 +897,7 @@ public class OrderServiceImpl implements IOrderService {
                 .setUndiscountableAmount(undiscountableAmount).setSellerId(sellerId).setBody(body)
                 .setOperatorId(operatorId).setStoreId(storeId).setExtendParams(extendParams)
                 .setTimeoutExpress(timeoutExpress)
-                .setNotifyUrl("http://749zk8.natappfree.cc/shop_demo-dev/order/alipay_callback.do")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
+                .setNotifyUrl("http://u4zv57.natappfree.cc/shop_demo-dev/order/alipay_callback.do")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
                 .setGoodsDetailList(goodsDetailList);
 
         AlipayF2FPrecreateResult result = tradeService.tradePrecreate(builder);
@@ -871,6 +909,8 @@ public class OrderServiceImpl implements IOrderService {
                 dumpResponse(response);
 
                 // 需要修改为运行机器上的路径
+                //  /ftpfile/img/qr-%s.png
+                //   E:/java 学习/java学习下/Git与阿里云配置/ftpfile/qr-%s.png
                 String filePath = String.format("E:/java 学习/java学习下/Git与阿里云配置/ftpfile/qr-%s.png",
                         response.getOutTradeNo());
                 log.info("filePath:" + filePath);
