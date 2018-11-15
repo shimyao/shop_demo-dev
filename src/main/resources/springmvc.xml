@@ -3,17 +3,28 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:cache="http://www.springframework.org/schema/cache"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/mvc
-       http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/cache
+       http://www.springframework.org/schema/cache/spring-cache.xsd">
 
     <!-- 开启注解 -->
     <context:component-scan base-package="com.controller" >
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
+
+    <!--启用缓存注解功能-->
+
+    <cache:annotation-driven cache-manager="cacheManager" />
+
+    <!-- 引入同文件夹下的redis属性配置文件 -->
+    <import resource="spring-redis.xml"/>
+
 
     <!--配置控制器可以返回json格式的数据-->
     <mvc:annotation-driven>
@@ -51,19 +62,5 @@
             <bean class="com.controller.common.interceptor.AuthorityInterceptor"></bean>
         </mvc:interceptor>
     </mvc:interceptors>
-<!--
-
-    <mvc:interceptors>
-        <mvc:interceptor>
-            <mvc:mapping path="/user/*"/>
-            <mvc:exclude-mapping path="/user/register.do"/>
-            <mvc:exclude-mapping path="/user/forget_get_question/username/{username}"/>
-            <mvc:exclude-mapping path="/user/forget_check_answer/{username}/{question}/{answer}"/>
-            <mvc:exclude-mapping path="/user/forget_reset_password/{username}/{passwordNew}/{forgetToken}"/>
-            <mvc:exclude-mapping path="/user/check_valid/{type}/{str}"/>
-            <bean class="com.controller.common.interceptor.AuthorityInterceptor"></bean>
-        </mvc:interceptor>
-    </mvc:interceptors>
--->
 
 </beans>

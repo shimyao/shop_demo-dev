@@ -1,6 +1,7 @@
 package com.service.impl;
 
 import com.Utils.MD5Utils;
+import com.Utils.RedisCache;
 import com.Utils.TokenCache;
 import com.common.Const;
 import com.common.ServerResponse;
@@ -8,6 +9,8 @@ import com.dao.UserInfoMapper;
 import com.pojo.UserInfo;
 import com.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -91,6 +94,7 @@ class UserServiceImpl implements IUserService {
     }
 
     @Override
+    @CachePut
     public ServerResponse forget_check_answer(String username, String question, String answer) {
         //1.参数校验
         if (username==null||username.equals(" ")){
@@ -111,7 +115,9 @@ class UserServiceImpl implements IUserService {
         //3.服务端生成一个token保存并将token返回到客户端
          String forgetToken = UUID.randomUUID().toString();
           //guava cache缓存
-         TokenCache.set(username,forgetToken);
+        // TokenCache.set(username,forgetToken);
+        RedisCache redisCache = new RedisCache();
+        redisCache.put(username,forgetToken);
          return ServerResponse.serverResponseBySuccess(forgetToken);
     }
 
